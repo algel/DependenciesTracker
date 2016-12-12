@@ -152,9 +152,9 @@ namespace DependenciesTracking
 
         }
 
-        public IDisposable StartTracking(T trackedObject)
+        public IDependenciesTracker StartTracking(T trackedObject, bool provokeDependentPropertiesUpdate = true)
         {
-            return new DependenciesTracker<T>(this, trackedObject);
+            return new DependenciesTracker<T>(this, trackedObject, provokeDependentPropertiesUpdate);
         }
     }
 }

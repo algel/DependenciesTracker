@@ -3,7 +3,12 @@ using System.Collections.Generic;
 
 namespace DependenciesTracking
 {
-    internal partial class DependenciesTracker<T> : IDisposable
+    public interface IDependenciesTracker : IDisposable
+    {
+        void UpdateAll();
+    }
+
+    internal partial class DependenciesTracker<T> : IDependenciesTracker
     {
         private readonly DependenciesMap<T> _map;
 
@@ -11,26 +16,32 @@ namespace DependenciesTracking
 
         private readonly IList<ISubscriberBase> _rootSubscribers = new List<ISubscriberBase>();
 
-        public DependenciesTracker(DependenciesMap<T> map, T trackedObject)
+        public DependenciesTracker(DependenciesMap<T> map, T trackedObject, bool provokeDependentPropertiesUpdate)
         {
             if (map == null)
-                throw new ArgumentNullException("map");
+                throw new ArgumentNullException(nameof(map));
             // ReSharper disable once CompareNonConstrainedGenericWithNull
             if (trackedObject == null)
-                throw new ArgumentNullException("trackedObject");
+                throw new ArgumentNullException(nameof(trackedObject));
 
             _map = map;
             _trackedObject = trackedObject;
 
-            StartTrackingChanges();
+            StartTrackingChanges(provokeDependentPropertiesUpdate);
         }
 
-        private void StartTrackingChanges()
+        public DependenciesTracker(DependenciesMap<T> map, T trackedObject)
+            : this(map, trackedObject, true)
+        {
+        }
+
+        private void StartTrackingChanges(bool provokeDependentPropertiesUpdate)
         {
             foreach (var map in _map.MapItems)
             {
                 _rootSubscribers.Add(SubscriberBase.CreateSubscriber(_trackedObject, map, OnPropertyChanged));
-                ProvokeDependentPropertiesUpdate(map);
+                if (provokeDependentPropertiesUpdate)
+                    ProvokeDependentPropertiesUpdate(map);
             }
         }
 
@@ -50,6 +61,13 @@ namespace DependenciesTracking
             }
         }
 
+        public void UpdateAll()
+        {
+            foreach (var map in _map.MapItems)
+            {
+                ProvokeDependentPropertiesUpdate(map);
+            }
+        }
 
         public void Dispose()
         {

@@ -51,8 +51,9 @@ namespace DependenciesTracking.Interfaces
         /// Starts tracking all the properties defined in current map.
         /// </summary>
         /// <param name="trackedObject">View model on which the properties will be tracked. Cannot be null.</param>
+        /// <param name="provokeDependentPropertiesUpdate"></param>
         /// <returns>Disposable which represents internal tracking object, dispose it to stop the tracking. Not null.</returns>
         /// <exception cref="ArgumentNullException"> when trackedObject is null.</exception>
-        IDisposable StartTracking(T trackedObject);
+        IDependenciesTracker StartTracking(T trackedObject, bool provokeDependentPropertiesUpdate = true);
     }
 }
