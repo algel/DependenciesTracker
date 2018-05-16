@@ -23,14 +23,12 @@ namespace DependenciesTracking
         {
             private IDisposable _observer;
 
-            private new PropertyPathItem<T> PathItem { get { return (PropertyPathItem<T>)base.PathItem; } }
+            private new PropertyPathItem<T> PathItem => (PropertyPathItem<T>)base.PathItem;
 
             public PropertyChangeSubscriber(object effectiveObject, PropertyPathItem<T> pathItem, Action<PathItemBase<T>> onChanged)
                 : base(effectiveObject, pathItem, onChanged)
             {
-                var notifyPropertyChange = effectiveObject as INotifyPropertyChanged;
-
-                if (notifyPropertyChange != null)
+                if (effectiveObject is INotifyPropertyChanged notifyPropertyChange)
                     Subscribe(notifyPropertyChange);
 
                 var ancestor = InitAncestor();
@@ -78,9 +76,7 @@ namespace DependenciesTracking
 
             public override void Dispose()
             {
-                if (_observer != null)
-                    _observer.Dispose();
-
+                _observer?.Dispose();
                 base.Dispose();
             }
         }
@@ -89,18 +85,14 @@ namespace DependenciesTracking
         {
             private IDisposable _observer;
 
-            private new IEnumerable EffectiveObject
-            {
-                get { return (IEnumerable)base.EffectiveObject; }
-            }
+            private new IEnumerable EffectiveObject => (IEnumerable)base.EffectiveObject;
 
-            private new CollectionPathItem<T> PathItem { get { return (CollectionPathItem<T>)base.PathItem; } }
+            private new CollectionPathItem<T> PathItem => (CollectionPathItem<T>)base.PathItem;
 
             public CollectionChangeSubscriber(object effectiveObject, CollectionPathItem<T> pathItem, Action<PathItemBase<T>> onChanged)
                 : base(effectiveObject, pathItem, onChanged)
             {
-                var notifyCollectionChange = effectiveObject as INotifyCollectionChanged;
-                if (notifyCollectionChange != null)
+                if (effectiveObject is INotifyCollectionChanged notifyCollectionChange)
                     SubscribeToCollectionChange(notifyCollectionChange);
 
                 foreach (var ancestor in InitAncestors(EffectiveObject))
@@ -109,11 +101,12 @@ namespace DependenciesTracking
 
             private sealed class NullCollectionItemSubscriber : ISubscriberBase
             {
-                public object EffectiveObject { get { throw new NotSupportedException("Call to EffectiveObject is not supported in NullCollectionItemSubscriber"); } }
+                public object EffectiveObject => throw new NotSupportedException("Call to EffectiveObject is not supported in NullCollectionItemSubscriber");
 
+                // ReSharper disable once InconsistentNaming
                 private static readonly IList<ISubscriberBase> _emptyAncestorsList = new List<ISubscriberBase>();
 
-                public IList<ISubscriberBase> Ancestors { get { return _emptyAncestorsList; } }
+                public IList<ISubscriberBase> Ancestors => _emptyAncestorsList;
 
                 public void Dispose() { }
             }
@@ -190,21 +183,21 @@ namespace DependenciesTracking
                             Ancestors.Add(ancestor);
                         return;
                     default:
-                        throw new ArgumentException(string.Format("Unknown eventArgs.Action enum action: {0}", eventArgs.Action), "eventArgs");
+                        throw new ArgumentException($"Unknown eventArgs.Action enum action: {eventArgs.Action}", nameof(eventArgs));
                 }
             }
 
             private static void CheckIndexValid(int index, string indexName, NotifyCollectionChangedAction action)
             {
                 if (index == _invalidCollectionIndexValue)
-                    throw new NotSupportedException(string.Format("Processing {0} with unset {1} is not supported", action, indexName));
+                    throw new NotSupportedException($"Processing {action} with unset {indexName} is not supported");
+                if (index < 0) 
+                    throw new ArgumentOutOfRangeException(nameof(index));
             }
 
             public override void Dispose()
             {
-                if (_observer != null)
-                    _observer.Dispose();
-
+                _observer?.Dispose();
                 base.Dispose();
             }
         }
@@ -218,54 +211,34 @@ namespace DependenciesTracking
 
         private abstract class SubscriberBase : ISubscriberBase
         {
-            private readonly object _effectiveObject;
-
             protected readonly PathItemBase<T> PathItem;
 
             protected readonly Action<PathItemBase<T>> OnChanged;
 
-            private readonly IList<ISubscriberBase> _ancestors = new List<ISubscriberBase>();
+            public object EffectiveObject { get; }
 
-            public object EffectiveObject
-            {
-                get { return _effectiveObject; }
-            }
-
-            public IList<ISubscriberBase> Ancestors
-            {
-                get { return _ancestors; }
-            }
+            public IList<ISubscriberBase> Ancestors { get; } = new List<ISubscriberBase>();
 
             public static SubscriberBase CreateSubscriber(object effectiveObject, PathItemBase<T> pathItem, Action<PathItemBase<T>> onChanged)
             {
-                var propertyPathItem = pathItem as PropertyPathItem<T>;
-                if (propertyPathItem != null)
+                switch (pathItem)
                 {
-                    if (propertyPathItem.PropertyOrFieldName == string.Empty)
+                    case PropertyPathItem<T> propertyPathItem when propertyPathItem.PropertyOrFieldName == string.Empty:
                         return new RootObjectSubscriber(effectiveObject, pathItem, onChanged);
-
-                    return new PropertyChangeSubscriber(effectiveObject, propertyPathItem, onChanged);
+                    case PropertyPathItem<T> propertyPathItem:
+                        return new PropertyChangeSubscriber(effectiveObject, propertyPathItem, onChanged);
+                    case CollectionPathItem<T> collectionPathItem:
+                        return new CollectionChangeSubscriber(effectiveObject, collectionPathItem, onChanged);
                 }
 
-                var collectionPathItem = pathItem as CollectionPathItem<T>;
-                if (collectionPathItem != null)
-                    return new CollectionChangeSubscriber(effectiveObject, collectionPathItem, onChanged);
-
-                throw new ArgumentException(string.Format("Unknown path item type: {0}", pathItem.GetType()), "pathItem");
+                throw new ArgumentException($"Unknown path item type: {pathItem.GetType()}", nameof(pathItem));
             }
 
             protected SubscriberBase(object effectiveObject, PathItemBase<T> pathItem, Action<PathItemBase<T>> onChanged)
             {
-                if (effectiveObject == null)
-                    throw new ArgumentNullException("effectiveObject");
-                if (pathItem == null)
-                    throw new ArgumentNullException("pathItem");
-                if (onChanged == null)
-                    throw new ArgumentNullException("onChanged");
-
-                _effectiveObject = effectiveObject;
-                PathItem = pathItem;
-                OnChanged = onChanged;
+                EffectiveObject = effectiveObject ?? throw new ArgumentNullException(nameof(effectiveObject));
+                PathItem = pathItem ?? throw new ArgumentNullException(nameof(pathItem));
+                OnChanged = onChanged ?? throw new ArgumentNullException(nameof(onChanged));
             }
 
             public virtual void Dispose()

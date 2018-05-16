@@ -157,3 +157,9 @@ $RECYCLE.BIN/
 *.nupkg
 NuGetPackaging/
 DependenciesTracker/DependenciesTracking.snk
+/DependenciesTracker/.vs/DependenciesTracker/v15/Server/sqlite3
+/DependenciesTracker/.idea/.idea.DependenciesTracker/.idea
+/DependenciesTracker/.idea/.idea.DependenciesTracker/riderModule.iml
+/DependenciesTracker/sn.exe.config
+/DependenciesTracker/sn.exe
+/DependenciesTracker/pk

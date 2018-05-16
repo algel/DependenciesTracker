@@ -41,7 +41,8 @@ namespace DependenciesTracking.Tests
         private void OnPropertyChanged(string propertyName)
         {
             var handler = PropertyChanged;
-            if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));
+            if (handler != null)
+                handler(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 
@@ -253,7 +254,8 @@ namespace DependenciesTracking.Tests
         private void OnPropertyChanged(string propertyName)
         {
             var handler = PropertyChanged;
-            if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));
+            if (handler != null)
+                handler(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 
@@ -417,10 +419,7 @@ namespace DependenciesTracking.Tests
         }
 
 
-        [Fact(
-            Skip =
-                "Issue #6 is created but not yet fixed. It's a low priority issue which doesn't affect the first release"
-            )]
+        [Fact(Skip = "Issue #6 is created but not yet fixed. It's a low priority issue which doesn't affect the first release")]
         public void Init_SimpleValueTypePropertiesDependency_Issue6()
         {
             var dependencyMap = new DependenciesMap<TestOrder>()
@@ -475,10 +474,7 @@ namespace DependenciesTracking.Tests
             Assert.Equal("Client: " + firstName + " undefined", order.ClientFullDescription);
         }
 
-        [Fact(
-            Skip =
-                "Issue #6 is created but not yet fixed. It's a low priority issue which doesn't affect the first release"
-            )]
+        [Fact(Skip = "Issue #6 is created but not yet fixed. It's a low priority issue which doesn't affect the first release")]
         public void Init_SimpleRefTypePropertiesDependency_NullAndNotNullProperty_Issue6()
         {
             var dependencyMap = new DependenciesMap<TestOrder>()

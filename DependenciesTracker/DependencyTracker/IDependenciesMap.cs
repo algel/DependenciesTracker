@@ -1,7 +1,7 @@
 using System;
 using System.Linq.Expressions;
 
-namespace DependenciesTracking.Interfaces
+namespace DependenciesTracking
 {
     /// <summary>
     /// Instances of the interface are used for adding dependencies and start their tracking.
@@ -13,7 +13,7 @@ namespace DependenciesTracking.Interfaces
         /// <summary>
         /// Adds dependency to a map of dependencies.
         /// </summary>
-        /// <typeparam name="U">Type of dependent property.</typeparam>
+        /// <typeparam name="TProperty">Type of dependent property.</typeparam>
         /// <param name="dependentPropertySetter">Setter of the dependent property (like (o, propValue) => o.Cost = propValue). Cannot be null.</param>
         /// <param name="calculator">A method that calculates the value of dependent property on a view model instance (like o => o.Price * o.Quantity). Cannot be null.</param>
         /// <param name="obligatoryDependencyPath">Expression that represents the path on which the property depends on (like o => o.Price). Cannot be null.</param>
@@ -26,12 +26,12 @@ namespace DependenciesTracking.Interfaces
         /// var dependencyMap = new DependenciesMap&lt;Order&gt;&#40;&#41;
         ///.AddDependency&#40;(o, propValue) => o.Cost = propValue, o => o.Price * o.Quantity, o => o.Price, o => o.Quantity&#41;
         ///</example>
-        IDependenciesMap<T> AddDependency<U>(Action<T, U> dependentPropertySetter, Func<T, U> calculator, Expression<Func<T, object>> obligatoryDependencyPath, params Expression<Func<T, object>>[] dependencyPaths);
+        IDependenciesMap<T> AddDependency<TProperty>(Action<T, TProperty> dependentPropertySetter, Func<T, TProperty> calculator, Expression<Func<T, object>> obligatoryDependencyPath, params Expression<Func<T, object>>[] dependencyPaths);
 
         /// <summary>
         /// Adds dependency to a map of dependencies.
         /// </summary>
-        /// <typeparam name="U">Type of dependent property.</typeparam>
+        /// <typeparam name="TProperty">Type of dependent property.</typeparam>
         /// <param name="dependentProperty">Expression which describes the dependent property (like o => o.Cost). Cannot be null.</param>
         /// <param name="calculator">A method that calculates the value of dependent property on a view model instance (like o => o.Price * o.Quantity). Cannot be null.</param>
         /// <param name="obligatoryDependencyPath">Expression that represents the path on which the property depends on (like o => o.Price). Cannot be null.</param>
@@ -44,7 +44,7 @@ namespace DependenciesTracking.Interfaces
         /// var dependencyMap = new DependenciesMap&lt;Order&gt;&#40;&#41;
         ///.AddDependency&#40;o => o.Cost, o => o.Price * o.Quantity, o => o.Price, o => o.Quantity&#41;
         ///</example>
-        IDependenciesMap<T> AddDependency<U>(Expression<Func<T, U>> dependentProperty, Func<T, U> calculator, Expression<Func<T, object>> obligatoryDependencyPath, params Expression<Func<T, object>>[] dependencyPaths);
+        IDependenciesMap<T> AddDependency<TProperty>(Expression<Func<T, TProperty>> dependentProperty, Func<T, TProperty> calculator, Expression<Func<T, object>> obligatoryDependencyPath, params Expression<Func<T, object>>[] dependencyPaths);
 
 
         /// <summary>

@@ -18,13 +18,11 @@ namespace DependenciesTracking
 
         public DependenciesTracker(DependenciesMap<T> map, T trackedObject, bool provokeDependentPropertiesUpdate)
         {
-            if (map == null)
-                throw new ArgumentNullException(nameof(map));
             // ReSharper disable once CompareNonConstrainedGenericWithNull
             if (trackedObject == null)
                 throw new ArgumentNullException(nameof(trackedObject));
 
-            _map = map;
+            _map = map ?? throw new ArgumentNullException(nameof(map));
             _trackedObject = trackedObject;
 
             StartTrackingChanges(provokeDependentPropertiesUpdate);
@@ -54,9 +52,7 @@ namespace DependenciesTracking
         {
             while (pathItem != null)
             {
-                if (pathItem.UpdateDependentPropertyOrFieldAction != null)
-                    pathItem.UpdateDependentPropertyOrFieldAction(_trackedObject);
-
+                pathItem.UpdateDependentPropertyOrFieldAction?.Invoke(_trackedObject);
                 pathItem = pathItem.Ancestor;
             }
         }
